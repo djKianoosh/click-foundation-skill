@@ -48,7 +48,9 @@ One Claude Agent SDK agent with a rich system prompt encoding the Click methodol
 ### CLI Commands
 
 ```
-click foundation          # Start a Foundation Sprint (interactive dialogue)
+click init                # Initialize Click in a project directory (must run first)
+
+click foundation          # Start/resume a Foundation Sprint (interactive dialogue)
 click foundation show     # Show current/most recent Foundation Sprint results
 click foundation list     # List all Foundation Sprints
 
@@ -57,26 +59,40 @@ click sprint show <id>    # Show a Design Sprint's details and test results
 click sprint list         # List all Design Sprints for current hypothesis
 
 click hypothesis          # Show current Founding Hypothesis + Scorecard
-click hypothesis update   # Revise hypothesis based on learnings
+click hypothesis update   # Revise hypothesis based on learnings (creates new version + pivot record)
 
-click scorecard           # Show/update the scorecard
+click scorecard           # Show current scorecard status with evidence trail
+click scorecard update    # Update scorecard answers based on new evidence
 
 click learnings           # Show accumulated learnings across all sprints
-click init                # Initialize Click in a project directory
 ```
+
+**`click init` behavior:**
+- Creates a `.click/` directory in the project root
+- Creates the SQLite database at `.click/click.db`
+- Creates the `click-output/` directory for generated documents
+- Prompts for a project name and creates the initial `projects` row
+- The output directory is configurable: `click init --output-dir=docs/click/`
+
+**Out-of-order safeguards:**
+- `click sprint` requires a completed Foundation Sprint and Founding Hypothesis. If neither exists, the agent prompts the user to run `click foundation` first.
+- `click hypothesis` with no hypothesis created shows a message guiding the user to `click foundation`.
+- `click foundation` with an in-progress Foundation Sprint resumes from the last completed step (the current step is tracked in the `foundation_sprints.current_step` column).
 
 ### Agent Tools
 
 **Foundation Sprint Tools:**
 
-- `note_and_vote` — Guides the user through the Note-and-Vote process for any decision (customer, problem, advantages, competitors, differentiators, principles, approaches). Prompts for options, challenges with plain language and common sense tests, then asks the user to decide.
+- `note_and_vote` — Guides the user through the Note-and-Vote process for any decision (customer, problem, advantages, competitors, differentiators, principles, approaches). The interaction pattern: (1) Agent asks the user to brainstorm and list multiple options; (2) Agent may suggest additional options the user hasn't considered; (3) Agent challenges options using plain language and common sense tests; (4) Agent asks the user to pick their top 2-3; (5) Agent asks the user (as Decider) to make the final choice. The agent participates as a thinking partner but the user always decides.
 - `save_basics` — Stores the Basics card: customer, problem, advantages (capability/insight/motivation), competitors (gorilla + alternatives)
 - `save_differentiation` — Stores the 2x2 chart axes, position, chosen differentiators, and 3 practical principles (differentiate, differentiate, safeguard)
 - `save_mini_manifesto` — Stores the Mini Manifesto (differentiation + principles combined)
 - `save_approach` — Stores approach options with one-page summaries (title, summary, how it works)
-- `run_magic_lenses` — Guides evaluation of approaches through multiple lenses (customer, pragmatic, growth, money + custom). Stores each lens as a 2x2 comparison.
-- `save_founding_hypothesis` — Stores the Mad Libs: customer, problem, approach, competitors, differentiation
-- `update_scorecard` — Updates the 6-question scorecard
+- `run_magic_lenses` — Guides evaluation of approaches through multiple lenses (customer, pragmatic, growth, money + custom). For each lens: (1) Agent proposes axis labels based on the lens perspective; (2) User confirms or adjusts axes; (3) Agent asks user to position each approach on the 2x2 (high/low on each axis); (4) Agent records positions and highlights patterns across lenses. Stores each lens as a 2x2 comparison.
+- `save_founding_hypothesis` — Stores the Mad Libs: customer, problem, approach, competitors, differentiation. Sets this as the current hypothesis on the project.
+- `revise_hypothesis` — Creates a new hypothesis version based on Design Sprint learnings. Records what changed (customer, problem, approach, competitors, or differentiation) and why in the `pivots` table. Updates the project's current hypothesis pointer.
+- `update_scorecard` — Updates the 6-question scorecard. Each answer must be one of: `yes`, `maybe`, `not_yet`, `no`. Requires a `notes` field explaining the evidence.
+- `show_scorecard` — Reads and displays the current scorecard state with evidence trail from all entries.
 
 **Design Sprint Tools:**
 
@@ -88,7 +104,7 @@ click init                # Initialize Click in a project directory
 **Cross-cutting Tools:**
 
 - `query_learnings` — Retrieve patterns, validated/invalidated assumptions, and pivot history
-- `generate_docs` — Produce markdown files: Foundation Sprint summary, hypothesis card, sprint reports, scorecard
+- `generate_docs` — Produce markdown files. Takes a `doc_type` parameter: `all` (regenerate everything), `foundation` (Foundation Sprint summary + hypothesis card), `sprint` (latest Design Sprint report), `scorecard` (current scorecard), `learnings` (accumulated learnings), or `pivot_history` (hypothesis revision timeline). Defaults to `all`.
 - `get_project_context` — Load current hypothesis, scorecard state, and sprint history to ground conversation
 
 ### Agent Dialogue Flows
@@ -119,6 +135,7 @@ click init                # Initialize Click in a project directory
 CREATE TABLE projects (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
+    current_hypothesis_id INTEGER REFERENCES hypotheses(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -136,7 +153,8 @@ CREATE TABLE foundation_sprints (
     differentiator_2 TEXT,
     diff_2x2_axes TEXT,         -- JSON: {x_low, x_high, y_low, y_high}
     principles TEXT,            -- JSON array of 3 principles
-    status TEXT DEFAULT 'in_progress',
+    current_step TEXT DEFAULT 'customer',  -- customer, problem, advantages, competitors, differentiation, principles, manifesto, approaches, lenses, hypothesis, scorecard, complete
+    status TEXT DEFAULT 'in_progress' CHECK(status IN ('in_progress', 'complete')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -176,12 +194,12 @@ CREATE TABLE hypotheses (
 CREATE TABLE scorecard_entries (
     id INTEGER PRIMARY KEY,
     hypothesis_id INTEGER REFERENCES hypotheses(id),
-    right_customer TEXT,
-    right_problem TEXT,
-    right_approach TEXT,
-    will_they_switch TEXT,
-    right_differentiation TEXT,
-    does_it_click TEXT,
+    right_customer TEXT CHECK(right_customer IN ('yes', 'maybe', 'not_yet', 'no')),
+    right_problem TEXT CHECK(right_problem IN ('yes', 'maybe', 'not_yet', 'no')),
+    right_approach TEXT CHECK(right_approach IN ('yes', 'maybe', 'not_yet', 'no')),
+    will_they_switch TEXT CHECK(will_they_switch IN ('yes', 'maybe', 'not_yet', 'no')),
+    right_differentiation TEXT CHECK(right_differentiation IN ('yes', 'maybe', 'not_yet', 'no')),
+    does_it_click TEXT CHECK(does_it_click IN ('yes', 'maybe', 'not_yet', 'no')),
     notes TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -204,10 +222,10 @@ CREATE TABLE design_sprints (
 
 CREATE TABLE learnings (
     id INTEGER PRIMARY KEY,
-    source_type TEXT,
+    source_type TEXT NOT NULL CHECK(source_type IN ('foundation_sprint', 'design_sprint', 'pivot')),
     source_id INTEGER,
     insight TEXT NOT NULL,
-    lesson_number INTEGER,
+    lesson_number INTEGER CHECK(lesson_number BETWEEN 1 AND 10),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -220,6 +238,22 @@ CREATE TABLE pivots (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+### Session Management
+
+The Foundation Sprint and Design Sprint dialogues are long, multi-step conversations. Session management works as follows:
+
+**State persistence**: All artifacts are saved to SQLite as they are produced. The `foundation_sprints.current_step` column tracks which step the user is on (customer → problem → advantages → competitors → differentiation → principles → manifesto → approaches → lenses → hypothesis → scorecard → complete). Each step is saved independently via its tool, so no conversational state is lost if the session ends.
+
+**Resumption**: When the user runs `click foundation` with an in-progress sprint, the agent calls `get_project_context` which loads the partial Foundation Sprint. The agent sees which steps have data and which `current_step` is set, and resumes from that point. It briefly summarizes what was decided so far before continuing.
+
+**Design Sprints**: Similarly, `design_sprints.status` tracks state. The individual day columns (`day_map`, `day_sketch`, etc.) are nullable — the agent resumes from the first null day.
+
+**No conversational memory required**: The agent does not need to persist its conversation history between sessions. All decisions are stored as structured data in SQLite. The system prompt + loaded context is sufficient to resume coherently.
+
+### JSON Validation
+
+Several columns store JSON data (`alternatives`, `diff_2x2_axes`, `principles`, `evaluations`, `customer_reactions`). All JSON fields are validated using Pydantic models before writing to SQLite. The models are defined in the implementation and serve as the contract between tools and the database. If validation fails, the tool returns an error to the agent, which can retry with corrected data.
 
 ### Output & Document Generation
 
@@ -244,7 +278,7 @@ All files saved to `click-output/` directory (configurable via `click init`).
 - **Agent Framework**: Claude Agent SDK
 - **Model**: Claude (latest)
 - **Database**: SQLite
-- **CLI Framework**: TBD (click, typer, or argparse — to be decided in implementation plan)
+- **CLI Framework**: Typer (avoids name collision with the project name "Click")
 - **Output**: Markdown files + terminal output
 
 ## Learning System
