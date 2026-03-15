@@ -25,7 +25,17 @@ Every Design Sprint tests a piece of this hypothesis against real customer react
 pip install -e ".[dev]"
 ```
 
-Requires Python 3.11+ and a valid `ANTHROPIC_API_KEY` environment variable.
+Requires Python 3.11+.
+
+## Setup
+
+Interactive commands (`foundation`, `sprint`, `hypothesis update`, `scorecard update`) require an Anthropic API key:
+
+```bash
+export ANTHROPIC_API_KEY='your-key-here'
+```
+
+Get a key at [console.anthropic.com](https://console.anthropic.com/). Read-only commands (`foundation show`, `sprint list`, `hypothesis`, `scorecard`, `learnings`) work without a key — they only query the local database.
 
 ## Quick Start
 
@@ -33,7 +43,7 @@ Requires Python 3.11+ and a valid `ANTHROPIC_API_KEY` environment variable.
 # Initialize in your project directory
 click-coach init
 
-# Run a Foundation Sprint (interactive dialogue)
+# Run a Foundation Sprint (interactive dialogue — requires API key)
 click-coach foundation
 
 # After completing the Foundation Sprint, run Design Sprints

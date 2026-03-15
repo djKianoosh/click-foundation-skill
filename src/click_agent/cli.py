@@ -1,6 +1,7 @@
 """Typer CLI entry point for Click agent."""
 
 import asyncio
+import os
 from pathlib import Path
 
 import typer
@@ -50,6 +51,14 @@ def _get_output_dir() -> str:
     return str(click_dir.parent / "click-output")
 
 
+def _require_api_key() -> None:
+    """Check that ANTHROPIC_API_KEY is set before running interactive commands."""
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        typer.echo("Error: ANTHROPIC_API_KEY environment variable is not set.")
+        typer.echo("Set it with: export ANTHROPIC_API_KEY='your-key-here'")
+        raise typer.Exit(1)
+
+
 def _get_project_id(conn) -> int:
     project = conn.execute("SELECT id FROM projects ORDER BY id LIMIT 1").fetchone()
     if not project:
@@ -91,6 +100,8 @@ def foundation(ctx: typer.Context):
     """Start or resume a Foundation Sprint."""
     if ctx.invoked_subcommand is not None:
         return
+
+    _require_api_key()
 
     db_path = _get_db_path()
     conn = get_connection(db_path)
@@ -142,6 +153,8 @@ def sprint(ctx: typer.Context):
     """Start a Design Sprint."""
     if ctx.invoked_subcommand is not None:
         return
+
+    _require_api_key()
 
     db_path = _get_db_path()
     conn = get_connection(db_path)
@@ -207,6 +220,7 @@ def hypothesis(ctx: typer.Context):
 @hypothesis_app.command("update")
 def hypothesis_update():
     """Revise hypothesis based on learnings."""
+    _require_api_key()
     db_path = _get_db_path()
     conn = get_connection(db_path)
     project_id = _get_project_id(conn)
@@ -236,6 +250,7 @@ def scorecard(ctx: typer.Context):
 @scorecard_app.command("update")
 def scorecard_update():
     """Update scorecard with new evidence."""
+    _require_api_key()
     db_path = _get_db_path()
     conn = get_connection(db_path)
     project_id = _get_project_id(conn)
