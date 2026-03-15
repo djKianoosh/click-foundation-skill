@@ -6,6 +6,7 @@ from click_agent.tools.foundation import (
     save_differentiation,
     save_approach,
     save_founding_hypothesis,
+    save_magic_lens,
 )
 
 
@@ -114,3 +115,49 @@ class TestSaveFoundingHypothesis:
         assert hyp["version"] == 1
         project = db_conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
         assert project["current_hypothesis_id"] == hyp["id"]
+
+
+class TestSaveMagicLens:
+    def test_saves_lens_with_evaluations(self, db_conn):
+        project_id = create_project(db_conn, "Test")
+        sprint_id = create_foundation_sprint(db_conn, project_id)
+        db_conn.execute(
+            "INSERT INTO approaches (foundation_id, title) VALUES (?, ?)",
+            (sprint_id, "App"),
+        )
+        db_conn.execute(
+            "INSERT INTO approaches (foundation_id, title) VALUES (?, ?)",
+            (sprint_id, "Website"),
+        )
+        db_conn.commit()
+
+        result = save_magic_lens(
+            db_conn, sprint_id,
+            lens_name="customer",
+            x_axis_low="Hard to use", x_axis_high="Easy to use",
+            y_axis_low="Just okay", y_axis_high="Perfect solution",
+            evaluations=[
+                {"approach_id": 1, "x_position": "high", "y_position": "high"},
+                {"approach_id": 2, "x_position": "low", "y_position": "high"},
+            ],
+        )
+        cursor = db_conn.execute(
+            "SELECT * FROM magic_lenses WHERE foundation_id = ?", (sprint_id,)
+        )
+        lens = cursor.fetchone()
+        assert lens["lens_name"] == "customer"
+        assert "saved" in result.lower()
+
+    def test_rejects_invalid_position(self, db_conn):
+        project_id = create_project(db_conn, "Test")
+        sprint_id = create_foundation_sprint(db_conn, project_id)
+        result = save_magic_lens(
+            db_conn, sprint_id,
+            lens_name="pragmatic",
+            x_axis_low="a", x_axis_high="b",
+            y_axis_low="c", y_axis_high="d",
+            evaluations=[
+                {"approach_id": 1, "x_position": "middle", "y_position": "high"},
+            ],
+        )
+        assert "error" in result.lower()

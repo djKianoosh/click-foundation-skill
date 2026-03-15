@@ -2,7 +2,7 @@
 
 import json
 import sqlite3
-from click_agent.models import Alternatives, Diff2x2Axes, Principles
+from click_agent.models import Alternatives, Diff2x2Axes, LensEvaluation, LensEvaluations, Principles
 
 
 def save_basics(
@@ -123,3 +123,36 @@ def save_founding_hypothesis(
         f"'If we help {customer} solve {problem} with {approach}, "
         f"they will choose it over {competitors} because our solution is {differentiation}.'"
     )
+
+
+def save_magic_lens(
+    conn: sqlite3.Connection,
+    sprint_id: int,
+    *,
+    lens_name: str,
+    x_axis_low: str,
+    x_axis_high: str,
+    y_axis_low: str,
+    y_axis_high: str,
+    evaluations: list[dict],
+) -> str:
+    """Save a Magic Lens evaluation (2x2 chart from a specific perspective)."""
+    try:
+        evals = LensEvaluations(
+            items=[LensEvaluation(**e) for e in evaluations]
+        )
+    except Exception as e:
+        return f"Error: {e}"
+
+    conn.execute(
+        """INSERT INTO magic_lenses
+            (foundation_id, lens_name, x_axis_low, x_axis_high, y_axis_low, y_axis_high, evaluations)
+        VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (
+            sprint_id, lens_name,
+            x_axis_low, x_axis_high, y_axis_low, y_axis_high,
+            evals.model_dump_json(),
+        ),
+    )
+    conn.commit()
+    return f"Magic Lens '{lens_name}' saved with {len(evaluations)} approach evaluations."
