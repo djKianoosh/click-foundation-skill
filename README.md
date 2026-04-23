@@ -19,35 +19,40 @@ The core output of a Foundation Sprint is a single testable statement:
 
 Every Design Sprint tests a piece of this hypothesis against real customer reactions.
 
-## Install
+## Install — As a Skill (Recommended)
+
+The Foundation Sprint is available as a portable AI skill that works in Claude Code and Gemini.
+
+### Claude Code
+
+```bash
+mkdir -p ~/.claude/skills/click-foundation
+cp skills/click-foundation/SKILL.md ~/.claude/skills/click-foundation/SKILL.md
+```
+
+Then run `/click-foundation` in any conversation.
+
+### Gemini Gem
+
+1. Open [gemini.google.com](https://gemini.google.com) → Gems → New Gem
+2. Name it "Click Foundation Sprint"
+3. Paste the contents of `skills/click-foundation/SKILL.md` into Instructions
+4. Save and start a conversation
+
+See `skills/click-foundation/README.md` for details.
+
+## Install — As a CLI (Alternative)
+
+The full CLI includes Foundation Sprints, Design Sprints, and learnings tracking.
 
 ```bash
 pip install -e ".[dev]"
 ```
 
-Requires Python 3.11+.
-
-## Setup
-
-Interactive commands (`foundation`, `sprint`, `hypothesis update`, `scorecard update`) require an Anthropic API key:
+Requires Python 3.11+ and an Anthropic API key:
 
 ```bash
 export ANTHROPIC_API_KEY='your-key-here'
-```
-
-Get a key at [console.anthropic.com](https://console.anthropic.com/). Read-only commands (`foundation show`, `sprint list`, `hypothesis`, `scorecard`, `learnings`) work without a key — they only query the local database.
-
-## Quick Start
-
-```bash
-# Initialize in your project directory
-click-coach init
-
-# Run a Foundation Sprint (interactive dialogue — requires API key)
-click-coach foundation
-
-# After completing the Foundation Sprint, run Design Sprints
-click-coach sprint
 ```
 
 ## Commands
