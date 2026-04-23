@@ -137,3 +137,131 @@ Set initial answers for 6 questions (yes / maybe / not_yet / no):
 Ask the user for their honest initial assessment of each. Record answers with brief reasoning.
 
 Present the completed hypothesis and scorecard. Congratulate them — the Foundation Sprint is complete.
+
+## Persistence Protocol
+
+All state is saved to a `.click/` directory in the project root. This allows pausing and resuming across sessions.
+
+### On Invocation
+
+1. Try to read `.click/state.json`
+2. If it exists: read all `.click/*.json` files, summarize progress to the user, and resume from the next incomplete sub-step
+3. If it does not exist: create the `.click/` directory and start fresh. Ask for the project name.
+4. If file operations fail (e.g., Gemini Gem environment): switch to paste-based mode (see Gemini Fallback below)
+
+### After Each Decision
+
+1. Write the relevant data file (e.g., `.click/basics.json`)
+2. Update `.click/state.json` with the new current_step and current_sub_step
+3. Continue to the next sub-step
+
+### File Schemas
+
+**`.click/state.json`**
+
+```json
+{
+  "current_step": "basics",
+  "current_sub_step": "customer",
+  "started_at": "2026-04-23T10:00:00Z",
+  "last_updated": "2026-04-23T10:05:00Z",
+  "project_name": "My Startup"
+}
+```
+
+Steps progress: basics → differentiation → approach → hypothesis → complete
+Sub-steps: customer → problem → advantages → competitors → scales → chart → differentiators → principles → manifesto → brainstorm → summaries → lenses → decide → mad_libs → scorecard_init
+
+**`.click/basics.json`**
+
+```json
+{
+  "customer": "description of customer",
+  "problem": "the real problem",
+  "capability": "what you can do",
+  "insight": "what you understand",
+  "motivation": "why you care",
+  "gorilla": "dominant competitor",
+  "alternatives": ["alt 1", "alt 2"],
+  "substitutes": ["sub 1"],
+  "do_nothing": true
+}
+```
+
+**`.click/differentiation.json`**
+
+```json
+{
+  "scales": [{"name": "simple vs powerful", "position": "simple", "competitors": {"Competitor A": "powerful"}}],
+  "chart_x_low": "label", "chart_x_high": "label",
+  "chart_y_low": "label", "chart_y_high": "label",
+  "differentiator_1": "first differentiator",
+  "differentiator_2": "second differentiator",
+  "principles": ["principle 1", "principle 2", "principle 3"],
+  "manifesto": "combined 2x2 + principles summary"
+}
+```
+
+**`.click/approaches.json`**
+
+```json
+[
+  {
+    "title": "Approach Name",
+    "summary": "One sentence",
+    "how_it_works": "Brief description",
+    "is_top_bet": true,
+    "is_backup": false
+  }
+]
+```
+
+**`.click/lenses.json`**
+
+```json
+[
+  {
+    "lens_name": "customer",
+    "x_axis_low": "label", "x_axis_high": "label",
+    "y_axis_low": "label", "y_axis_high": "label",
+    "evaluations": [{"approach": "Name", "x": "high", "y": "high"}]
+  }
+]
+```
+
+**`.click/scorecard.json`**
+
+```json
+{
+  "right_customer": {"answer": "maybe", "evidence": "reasoning"},
+  "right_problem": {"answer": "yes", "evidence": "reasoning"},
+  "right_approach": {"answer": "not_yet", "evidence": "reasoning"},
+  "will_they_switch": {"answer": "maybe", "evidence": "reasoning"},
+  "right_differentiation": {"answer": "yes", "evidence": "reasoning"},
+  "does_it_click": {"answer": "not_yet", "evidence": "reasoning"}
+}
+```
+
+**`.click/hypothesis.md`**
+Generate as a readable markdown document:
+
+```markdown
+# Founding Hypothesis
+
+If we help **[customer]** solve **[problem]** with **[approach]**, they will choose it over **[competitors]** because our solution is **[differentiation]**.
+
+## Scorecard
+
+| Question | Answer | Evidence |
+|----------|--------|----------|
+| Right customer? | maybe | reasoning |
+| ... | ... | ... |
+```
+
+### Gemini Fallback
+
+If file operations are unavailable:
+- After each decision, output the state as a fenced JSON code block labeled with the filename
+- Tell the user: "Save this to `.click/<filename>` in your project directory."
+- On resume, ask: "Paste the contents of your `.click/state.json` to pick up where you left off."
+- If the user also pastes other data files, use them for full context
