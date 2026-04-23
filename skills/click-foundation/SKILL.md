@@ -157,106 +157,21 @@ All state is saved to a `.click/` directory in the project root. This allows pau
 
 ### File Schemas
 
-**`.click/state.json`**
+**`.click/state.json`** — `current_step` (basics/differentiation/approach/hypothesis/complete), `current_sub_step`, `started_at`, `last_updated`, `project_name`
 
-```json
-{
-  "current_step": "basics",
-  "current_sub_step": "customer",
-  "started_at": "2026-04-23T10:00:00Z",
-  "last_updated": "2026-04-23T10:05:00Z",
-  "project_name": "My Startup"
-}
-```
-
-Steps progress: basics → differentiation → approach → hypothesis → complete
 Sub-steps: customer → problem → advantages → competitors → scales → chart → differentiators → principles → manifesto → brainstorm → summaries → lenses → decide → mad_libs → scorecard_init
 
-**`.click/basics.json`**
+**`.click/basics.json`** — `customer`, `problem`, `capability`, `insight`, `motivation`, `gorilla`, `alternatives` (array), `substitutes` (array)
 
-```json
-{
-  "customer": "description of customer",
-  "problem": "the real problem",
-  "capability": "what you can do",
-  "insight": "what you understand",
-  "motivation": "why you care",
-  "gorilla": "dominant competitor",
-  "alternatives": ["alt 1", "alt 2"],
-  "substitutes": ["sub 1"],
-  "do_nothing": true
-}
-```
+**`.click/differentiation.json`** — `scales` (array of {name, position, competitors}), `chart_x_low`, `chart_x_high`, `chart_y_low`, `chart_y_high`, `differentiator_1`, `differentiator_2`, `principles` (array of 3), `manifesto`
 
-**`.click/differentiation.json`**
+**`.click/approaches.json`** — Array of {`title`, `summary`, `how_it_works`, `is_top_bet`, `is_backup`}
 
-```json
-{
-  "scales": [{"name": "simple vs powerful", "position": "simple", "competitors": {"Competitor A": "powerful"}}],
-  "chart_x_low": "label", "chart_x_high": "label",
-  "chart_y_low": "label", "chart_y_high": "label",
-  "differentiator_1": "first differentiator",
-  "differentiator_2": "second differentiator",
-  "principles": ["principle 1", "principle 2", "principle 3"],
-  "manifesto": "combined 2x2 + principles summary"
-}
-```
+**`.click/lenses.json`** — Array of {`lens_name`, `x_axis_low`, `x_axis_high`, `y_axis_low`, `y_axis_high`, `evaluations`: [{`approach`, `x`, `y`}]}
 
-**`.click/approaches.json`**
+**`.click/scorecard.json`** — Keys: `right_customer`, `right_problem`, `right_approach`, `will_they_switch`, `right_differentiation`, `does_it_click`. Each has `answer` (yes/maybe/not_yet/no) and `evidence`.
 
-```json
-[
-  {
-    "title": "Approach Name",
-    "summary": "One sentence",
-    "how_it_works": "Brief description",
-    "is_top_bet": true,
-    "is_backup": false
-  }
-]
-```
-
-**`.click/lenses.json`**
-
-```json
-[
-  {
-    "lens_name": "customer",
-    "x_axis_low": "label", "x_axis_high": "label",
-    "y_axis_low": "label", "y_axis_high": "label",
-    "evaluations": [{"approach": "Name", "x": "high", "y": "high"}]
-  }
-]
-```
-
-**`.click/scorecard.json`**
-
-```json
-{
-  "right_customer": {"answer": "maybe", "evidence": "reasoning"},
-  "right_problem": {"answer": "yes", "evidence": "reasoning"},
-  "right_approach": {"answer": "not_yet", "evidence": "reasoning"},
-  "will_they_switch": {"answer": "maybe", "evidence": "reasoning"},
-  "right_differentiation": {"answer": "yes", "evidence": "reasoning"},
-  "does_it_click": {"answer": "not_yet", "evidence": "reasoning"}
-}
-```
-
-**`.click/hypothesis.md`**
-Generate as a readable markdown document:
-
-```markdown
-# Founding Hypothesis
-
-If we help **[customer]** solve **[problem]** with **[approach]**, they will choose it over **[competitors]** because our solution is **[differentiation]**.
-
-## Scorecard
-
-| Question | Answer | Evidence |
-|----------|--------|----------|
-| Right customer? | maybe | reasoning |
-| ... | ... | ... |
-```
+**`.click/hypothesis.md`** — Readable markdown with the Mad Libs hypothesis and scorecard table.
 
 ### Gemini Fallback
 
