@@ -72,44 +72,106 @@ export ANTHROPIC_API_KEY='your-key-here'
 | `click-coach scorecard update` | Update scorecard with new evidence |
 | `click-coach learnings` | Show accumulated learnings |
 
-## Foundation Sprint Flow
+## Demo Walkthrough
 
-The agent guides you through the Click methodology step by step:
+Here's what a Foundation Sprint looks like in practice, using a fictional meal-planning app as an example.
 
-**Day 1 — Basics + Differentiation**
-- Define your **customer** (plain language, not jargon)
-- Define the **problem** they have (common sense test: "does this make sense?")
-- Identify your **advantages** (capability, insight, motivation)
-- Map the **competition** (800-pound gorilla, alternatives, substitutes)
-- Create a **differentiation** 2x2 chart and pick 2 differentiators
-- Write 3 **practical principles** (differentiate, differentiate, safeguard)
+### Step 1 — Basics
 
-**Day 2 — Approach**
-- Generate 3+ **approach options** (including non-obvious ones)
-- Evaluate through **Magic Lenses** (customer, pragmatic, growth, money perspectives)
-- Choose a **top bet** and backup
-- Write the **Founding Hypothesis**
-- Set initial **Scorecard** answers
+The coach asks about your customer, problem, advantages, and competition — one at a time, in plain language.
 
-## The Scorecard
+```
+Coach: Who is your customer? Describe them in plain language — no jargon,
+       no personas. Just who they are and what their life looks like.
 
-After each Design Sprint, the agent updates six questions:
+You:   Busy parents who cook dinner most weeknights but run out of ideas
+       and end up ordering takeout more than they want to.
 
-- Right customer?
-- Right problem?
-- Right approach?
-- Will they switch?
-- Right differentiation?
-- Does it click?
+Coach: Common sense check — does "busy parents who cook most weeknights"
+       make sense to someone outside your industry? Yes, that's clear.
+       What real problem do they have?
 
-Answers are evidence-based: `yes`, `maybe`, `not_yet`, or `no`.
+You:   They waste 20+ minutes every evening figuring out what to cook,
+       then realize they're missing ingredients.
+
+Coach: That's a real problem, not a feature wish. Good.
+```
+
+### Step 2 — Differentiation
+
+You plot your product against competitors on scales, then build a 2x2 chart to find where you win.
+
+```
+                    Personalized
+                         |
+                    [You] |
+                         |
+     Simple ─────────────┼──────────────── Complex
+                         |
+                         | [Competitor A]
+               [Do Nothing]
+                         |
+                      Generic
+```
+
+From the chart, you pick 2 differentiators and write 3 practical principles:
+
+```
+Differentiators:
+  1. Personalized to your family's actual preferences
+  2. Simple — 5 ingredients or fewer, always
+
+Principles:
+  1. Differentiate: Recommend meals based on what this family actually eats
+  2. Differentiate: Never suggest a recipe with more than 5 ingredients
+  3. Safeguard: Never require the user to manually enter preferences
+```
+
+### Step 3 — Approach
+
+You brainstorm 3+ approaches, evaluate each through Magic Lenses (customer, pragmatic, growth, money — each a 2x2 chart), and pick a top bet.
+
+```
+Magic Lens: Customer
+
+              High want
+                 |
+           [App] | [Chatbot]
+                 |
+  Low effort ────┼──────── High effort
+                 |
+                 | [Meal kit]
+                 |
+              Low want
+```
+
+Patterns across lenses reveal which approach wins consistently.
+
+### Step 4 — Founding Hypothesis
+
+Everything rolls up into one testable statement:
+
+> If we help **busy parents** solve **nightly meal-planning paralysis** with **a 5-ingredient recipe app that learns their preferences**, they will choose it over **generic recipe sites and meal kits** because our solution is **personalized and radically simple**.
+
+Plus an initial scorecard:
+
+| Question | Answer | Evidence |
+|----------|--------|----------|
+| Right customer? | yes | We are these people |
+| Right problem? | yes | We experience this daily |
+| Right approach? | maybe | Need to test if 5-ingredient constraint works |
+| Will they switch? | not_yet | Haven't tested with real users |
+| Right differentiation? | yes | Nothing else combines personalization + simplicity |
+| Does it click? | not_yet | Hypothesis needs validation through Design Sprints |
+
+All progress is saved to `.click/` — stop anytime and pick up where you left off.
 
 ## How It Works
 
-- All data stored in `.click/click.db` (SQLite)
-- Generated documents saved to `click-output/`
-- Session state tracked per step — quit and resume anytime
-- Learnings accumulate across sprints, informing future coaching
+- Session state saved to `.click/` directory as JSON files
+- Resume from any step across conversations
+- Final deliverable: `.click/hypothesis.md`
+- Works in Claude Code (file I/O) and Gemini (paste-based fallback)
 
 ## The 10 Lessons
 
