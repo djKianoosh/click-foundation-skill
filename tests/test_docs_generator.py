@@ -1,14 +1,14 @@
-import json
 from pathlib import Path
+
 import pytest
-from click_agent.db import create_project, create_foundation_sprint
-from click_agent.tools.foundation import (
+from db import create_foundation_sprint, create_project
+from docs_generator import generate_docs
+from tools import (
     save_basics,
     save_differentiation,
     save_founding_hypothesis,
+    update_scorecard,
 )
-from click_agent.tools.scorecard import update_scorecard
-from click_agent.docs_generator import generate_docs
 
 
 @pytest.fixture
@@ -16,30 +16,49 @@ def full_setup(db_conn, tmp_project):
     project_id = create_project(db_conn, "My Startup")
     sprint_id = create_foundation_sprint(db_conn, project_id)
     save_basics(
-        db_conn, sprint_id,
-        customer="founders", problem="slow validation",
-        capability="engineering", insight="startup failure",
-        motivation="help founders", gorilla="YC",
+        db_conn,
+        sprint_id,
+        customer="founders",
+        problem="slow validation",
+        capability="engineering",
+        insight="startup failure",
+        motivation="help founders",
+        gorilla="YC",
         alternatives=["books", "mentors"],
     )
     save_differentiation(
-        db_conn, sprint_id,
-        differentiator_1="AI-guided", differentiator_2="evidence-based",
-        diff_2x2_axes={"x_low": "Generic", "x_high": "Personal", "y_low": "Slow", "y_high": "Fast"},
+        db_conn,
+        sprint_id,
+        differentiator_1="AI-guided",
+        differentiator_2="evidence-based",
+        diff_2x2_axes={
+            "x_low": "Generic",
+            "x_high": "Personal",
+            "y_low": "Slow",
+            "y_high": "Fast",
+        },
         principles=["Guide with AI", "Evidence over opinions", "Empower don't replace"],
     )
     save_founding_hypothesis(
-        db_conn, sprint_id, project_id,
-        customer="founders", problem="slow validation",
-        approach="CLI coach", competitors="books and mentors",
+        db_conn,
+        sprint_id,
+        project_id,
+        customer="founders",
+        problem="slow validation",
+        approach="CLI coach",
+        competitors="books and mentors",
         differentiation="AI-guided and evidence-based",
     )
     hyp = db_conn.execute("SELECT * FROM hypotheses").fetchone()
     update_scorecard(
-        db_conn, hyp["id"],
-        right_customer="yes", right_problem="maybe",
-        right_approach="not_yet", will_they_switch="not_yet",
-        right_differentiation="not_yet", does_it_click="not_yet",
+        db_conn,
+        hyp["id"],
+        right_customer="yes",
+        right_problem="maybe",
+        right_approach="not_yet",
+        will_they_switch="not_yet",
+        right_differentiation="not_yet",
+        does_it_click="not_yet",
         notes="Initial assessment",
     )
     return {

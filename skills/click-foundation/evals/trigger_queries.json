@@ -1,0 +1,122 @@
+[
+  {
+    "query": "I want to run a Click Foundation Sprint for my new meal prep startup idea.",
+    "should_trigger": true,
+    "split": "train",
+    "rationale": "Direct mention of Click Foundation Sprint."
+  },
+  {
+    "query": "Help me figure out who my customer is and what real problem we solve without corporate buzzwords.",
+    "should_trigger": true,
+    "split": "train",
+    "rationale": "Matches Click Lesson 2 and Basics step (customer/problem in plain language)."
+  },
+  {
+    "query": "Can we do a 2x2 competitive analysis and define 3 practical principles for our product differentiation?",
+    "should_trigger": true,
+    "split": "train",
+    "rationale": "Explicitly requests 2x2 differentiation and practical principles (Click Step 2)."
+  },
+  {
+    "query": "Help me write a founding hypothesis for my B2B developer tool using Jake Knapp's formula.",
+    "should_trigger": true,
+    "split": "train",
+    "rationale": "Requests founding hypothesis formula from Jake Knapp's Click methodology."
+  },
+  {
+    "query": "Let's brainstorm approaches for delivering my service and run them through magic lenses.",
+    "should_trigger": true,
+    "split": "train",
+    "rationale": "Matches Click Step 3 (approach brainstorming and magic lenses)."
+  },
+  {
+    "query": "We need to sketch a 5-day prototype test for customer interviews on Friday.",
+    "should_trigger": false,
+    "split": "train",
+    "rationale": "Near-miss: This describes a Design Sprint (testing loop), not a Foundation Sprint."
+  },
+  {
+    "query": "Write a Python script to scrape competitors' pricing from their homepages.",
+    "should_trigger": false,
+    "split": "train",
+    "rationale": "Near-miss: Coding/scraping request rather than product strategy dialogue."
+  },
+  {
+    "query": "Draft a Delaware C-Corp founder agreement with 4-year vesting schedule.",
+    "should_trigger": false,
+    "split": "train",
+    "rationale": "Legal setup query, out of scope for Click Foundation."
+  },
+  {
+    "query": "Write 5 Facebook advertising headlines targeting dental clinics.",
+    "should_trigger": false,
+    "split": "train",
+    "rationale": "Marketing copywriting, out of scope for strategy sprint."
+  },
+  {
+    "query": "Can you review my React state management architecture for race conditions?",
+    "should_trigger": false,
+    "split": "train",
+    "rationale": "Frontend engineering question."
+  },
+  {
+    "query": "I have an idea for an audio badge for nurses, but need to validate the strategy and who we compete against before writing code.",
+    "should_trigger": true,
+    "split": "validation",
+    "rationale": "Implicit strategy validation and competitive positioning."
+  },
+  {
+    "query": "Walk me through the Click coach process to formulate our value proposition and scorecard.",
+    "should_trigger": true,
+    "split": "validation",
+    "rationale": "Direct mention of Click coach and scorecard."
+  },
+  {
+    "query": "Help me test if my startup idea clicks before I build it.",
+    "should_trigger": true,
+    "split": "validation",
+    "rationale": "Core Click thesis (Lesson 10: tiny loops until it clicks, then build)."
+  },
+  {
+    "query": "I want to map our competitors including the 800-pound gorilla and the do-nothing alternative.",
+    "should_trigger": true,
+    "split": "validation",
+    "rationale": "Click-specific competitive framing (Lesson 4)."
+  },
+  {
+    "query": "Create an initial validation scorecard for our SaaS idea with yes/maybe/no ratings.",
+    "should_trigger": true,
+    "split": "validation",
+    "rationale": "Click Scorecard setup (Step 4b)."
+  },
+  {
+    "query": "Let's conduct 5 user interviews on our Figma prototype and log genuine customer reactions.",
+    "should_trigger": false,
+    "split": "validation",
+    "rationale": "Design Sprint execution / prototype testing, not Foundation Sprint."
+  },
+  {
+    "query": "Fix this bug where SQLite throws a foreign key constraint failure.",
+    "should_trigger": false,
+    "split": "validation",
+    "rationale": "Database debugging query."
+  },
+  {
+    "query": "Generate a financial model in Excel showing 3-year ARR projections.",
+    "should_trigger": false,
+    "split": "validation",
+    "rationale": "Financial modeling, not product hypothesis definition."
+  },
+  {
+    "query": "Summarize the key differences between agile and scrum methodologies.",
+    "should_trigger": false,
+    "split": "validation",
+    "rationale": "Generic software development theory."
+  },
+  {
+    "query": "Set up a GitHub Actions CI pipeline to run my pytest suite on pull requests.",
+    "should_trigger": false,
+    "split": "validation",
+    "rationale": "DevOps / CI pipeline task."
+  }
+]

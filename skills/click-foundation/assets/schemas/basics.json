@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClickBasics",
+  "type": "object",
+  "required": [
+    "customer",
+    "problem",
+    "capability",
+    "insight",
+    "motivation",
+    "gorilla",
+    "alternatives"
+  ],
+  "properties": {
+    "customer": {
+      "type": "string",
+      "description": "Plain language description of the customer"
+    },
+    "problem": {
+      "type": "string",
+      "description": "The real problem they struggle with today (not a feature wish)"
+    },
+    "capability": {
+      "type": "string",
+      "description": "What you can do that others cannot"
+    },
+    "insight": {
+      "type": "string",
+      "description": "What you understand that others do not"
+    },
+    "motivation": {
+      "type": "string",
+      "description": "Why you care about solving this"
+    },
+    "gorilla": {
+      "type": "string",
+      "description": "The dominant 800-pound gorilla incumbent"
+    },
+    "alternatives": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Direct alternatives and substitutes (including 'do nothing')"
+    }
+  }
+}

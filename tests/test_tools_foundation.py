@@ -1,10 +1,10 @@
 import json
-import pytest
-from click_agent.db import create_project, create_foundation_sprint, get_foundation_sprint
-from click_agent.tools.foundation import (
+
+from db import create_foundation_sprint, create_project, get_foundation_sprint
+from tools import (
+    save_approach,
     save_basics,
     save_differentiation,
-    save_approach,
     save_founding_hypothesis,
     save_magic_lens,
 )
@@ -14,8 +14,9 @@ class TestSaveBasics:
     def test_saves_customer_and_problem(self, db_conn):
         project_id = create_project(db_conn, "Test")
         sprint_id = create_foundation_sprint(db_conn, project_id)
-        result = save_basics(
-            db_conn, sprint_id,
+        save_basics(
+            db_conn,
+            sprint_id,
             customer="solo founders",
             problem="validating product ideas takes too long",
             capability="software engineering",
@@ -28,17 +29,24 @@ class TestSaveBasics:
         assert sprint["customer"] == "solo founders"
         assert sprint["problem"] == "validating product ideas takes too long"
         assert sprint["gorilla"] == "Y Combinator"
-        assert json.loads(sprint["alternatives"]) == {"items": ["books", "mentors", "consulting firms"]}
+        assert json.loads(sprint["alternatives"]) == {
+            "items": ["books", "mentors", "consulting firms"]
+        }
         assert sprint["current_step"] == "differentiation"
 
     def test_returns_success_message(self, db_conn):
         project_id = create_project(db_conn, "Test")
         sprint_id = create_foundation_sprint(db_conn, project_id)
         result = save_basics(
-            db_conn, sprint_id,
-            customer="founders", problem="slow validation",
-            capability="eng", insight="failure", motivation="help",
-            gorilla="YC", alternatives=["books"],
+            db_conn,
+            sprint_id,
+            customer="founders",
+            problem="slow validation",
+            capability="eng",
+            insight="failure",
+            motivation="help",
+            gorilla="YC",
+            alternatives=["books"],
         )
         assert "saved" in result.lower()
 
@@ -47,15 +55,22 @@ class TestSaveDifferentiation:
     def test_saves_differentiators_and_principles(self, db_conn):
         project_id = create_project(db_conn, "Test")
         sprint_id = create_foundation_sprint(db_conn, project_id)
-        result = save_differentiation(
-            db_conn, sprint_id,
+        save_differentiation(
+            db_conn,
+            sprint_id,
             differentiator_1="AI-guided",
             differentiator_2="evidence-based",
             diff_2x2_axes={
-                "x_low": "Generic", "x_high": "Personalized",
-                "y_low": "Slow", "y_high": "Fast",
+                "x_low": "Generic",
+                "x_high": "Personalized",
+                "y_low": "Slow",
+                "y_high": "Fast",
             },
-            principles=["Guide with AI", "Evidence over opinions", "Empower don't replace"],
+            principles=[
+                "Guide with AI",
+                "Evidence over opinions",
+                "Empower don't replace",
+            ],
         )
         sprint = get_foundation_sprint(db_conn, sprint_id)
         assert sprint["differentiator_1"] == "AI-guided"
@@ -69,8 +84,10 @@ class TestSaveDifferentiation:
         project_id = create_project(db_conn, "Test")
         sprint_id = create_foundation_sprint(db_conn, project_id)
         result = save_differentiation(
-            db_conn, sprint_id,
-            differentiator_1="A", differentiator_2="B",
+            db_conn,
+            sprint_id,
+            differentiator_1="A",
+            differentiator_2="B",
             diff_2x2_axes={"x_low": "a", "x_high": "b", "y_low": "c", "y_high": "d"},
             principles=["Only one"],
         )
@@ -81,17 +98,16 @@ class TestSaveApproach:
     def test_saves_approach(self, db_conn):
         project_id = create_project(db_conn, "Test")
         sprint_id = create_foundation_sprint(db_conn, project_id)
-        result = save_approach(
-            db_conn, sprint_id,
+        save_approach(
+            db_conn,
+            sprint_id,
             title="CLI Tool",
             summary="Build a command-line product coach",
             how_it_works="User runs commands, agent guides them",
             is_top_bet=True,
             is_backup=False,
         )
-        cursor = db_conn.execute(
-            "SELECT * FROM approaches WHERE foundation_id = ?", (sprint_id,)
-        )
+        cursor = db_conn.execute("SELECT * FROM approaches WHERE foundation_id = ?", (sprint_id,))
         approach = cursor.fetchone()
         assert approach["title"] == "CLI Tool"
         assert approach["is_top_bet"] == 1
@@ -101,8 +117,10 @@ class TestSaveFoundingHypothesis:
     def test_saves_hypothesis_and_updates_project(self, db_conn):
         project_id = create_project(db_conn, "Test")
         sprint_id = create_foundation_sprint(db_conn, project_id)
-        result = save_founding_hypothesis(
-            db_conn, sprint_id, project_id,
+        save_founding_hypothesis(
+            db_conn,
+            sprint_id,
+            project_id,
             customer="solo founders",
             problem="slow validation",
             approach="AI product coach CLI",
@@ -132,18 +150,19 @@ class TestSaveMagicLens:
         db_conn.commit()
 
         result = save_magic_lens(
-            db_conn, sprint_id,
+            db_conn,
+            sprint_id,
             lens_name="customer",
-            x_axis_low="Hard to use", x_axis_high="Easy to use",
-            y_axis_low="Just okay", y_axis_high="Perfect solution",
+            x_axis_low="Hard to use",
+            x_axis_high="Easy to use",
+            y_axis_low="Just okay",
+            y_axis_high="Perfect solution",
             evaluations=[
                 {"approach_id": 1, "x_position": "high", "y_position": "high"},
                 {"approach_id": 2, "x_position": "low", "y_position": "high"},
             ],
         )
-        cursor = db_conn.execute(
-            "SELECT * FROM magic_lenses WHERE foundation_id = ?", (sprint_id,)
-        )
+        cursor = db_conn.execute("SELECT * FROM magic_lenses WHERE foundation_id = ?", (sprint_id,))
         lens = cursor.fetchone()
         assert lens["lens_name"] == "customer"
         assert "saved" in result.lower()
@@ -152,10 +171,13 @@ class TestSaveMagicLens:
         project_id = create_project(db_conn, "Test")
         sprint_id = create_foundation_sprint(db_conn, project_id)
         result = save_magic_lens(
-            db_conn, sprint_id,
+            db_conn,
+            sprint_id,
             lens_name="pragmatic",
-            x_axis_low="a", x_axis_high="b",
-            y_axis_low="c", y_axis_high="d",
+            x_axis_low="a",
+            x_axis_high="b",
+            y_axis_low="c",
+            y_axis_high="d",
             evaluations=[
                 {"approach_id": 1, "x_position": "middle", "y_position": "high"},
             ],

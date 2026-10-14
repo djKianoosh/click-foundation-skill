@@ -1,21 +1,18 @@
 import sqlite3
+
 import pytest
-from click_agent.db import (
-    init_db,
-    get_connection,
-    create_project,
-    get_project,
+from db import (
     create_foundation_sprint,
+    create_project,
     get_foundation_sprint,
+    get_project,
     update_foundation_step,
 )
 
 
 class TestInitDb:
     def test_creates_all_tables(self, db_conn):
-        cursor = db_conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
-        )
+        cursor = db_conn.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
         tables = [row[0] for row in cursor.fetchall()]
         expected = [
             "approaches",

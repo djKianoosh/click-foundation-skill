@@ -4,4 +4,9 @@ __pycache__/
 dist/
 build/
 .click/
+click-output/
 *.db
+.venv/
+.pytest_cache/
+.ruff_cache/
+uv.lock

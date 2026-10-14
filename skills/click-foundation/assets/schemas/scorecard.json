@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClickScorecard",
+  "type": "object",
+  "required": [
+    "right_customer",
+    "right_problem",
+    "right_approach",
+    "will_they_switch",
+    "right_differentiation",
+    "does_it_click"
+  ],
+  "properties": {
+    "right_customer": { "type": "string", "enum": ["yes", "maybe", "not_yet", "no"] },
+    "right_problem": { "type": "string", "enum": ["yes", "maybe", "not_yet", "no"] },
+    "right_approach": { "type": "string", "enum": ["yes", "maybe", "not_yet", "no"] },
+    "will_they_switch": { "type": "string", "enum": ["yes", "maybe", "not_yet", "no"] },
+    "right_differentiation": { "type": "string", "enum": ["yes", "maybe", "not_yet", "no"] },
+    "does_it_click": { "type": "string", "enum": ["yes", "maybe", "not_yet", "no"] },
+    "notes": { "type": "string" }
+  }
+}

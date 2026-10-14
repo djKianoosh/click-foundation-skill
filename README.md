@@ -2,198 +2,126 @@
 
 AI product coach that guides founders through the [Click methodology](https://theclickbook.com) by Jake Knapp and John Zeratsky.
 
+---
+
 ## What It Does
 
-Click Coach is a CLI agent that walks you through two structured processes:
+Click Coach is an agentic AI skill and command-line companion that guides founders through structured strategic processes:
 
-1. **Foundation Sprint** — A guided dialogue to define your product strategy and produce a Founding Hypothesis
-2. **Design Sprints** — Rapid test-and-learn loops to validate your hypothesis with real customers
+1. **Foundation Sprint** — A guided dialogue to define your product strategy, test your assumptions in plain language, plot a 2x2 competitive positioning matrix, and formulate a testable **Founding Hypothesis** and initial **Scorecard**.
+2. **Design Sprints** — Structured test-and-learn loops to validate your hypothesis with real customers before writing production code.
 
-The agent challenges your assumptions, enforces plain language, and tracks everything in a local database so you can pick up where you left off.
+The agent challenges your assumptions, enforces plain language, and tracks state deterministically in `.click/` so you can pause and resume at any point.
+
+---
 
 ## The Founding Hypothesis
 
-The core output of a Foundation Sprint is a single testable statement:
+The primary deliverable of a Foundation Sprint is a single testable statement:
 
 > If we help **[customer]** solve **[problem]** with **[approach]**, they will choose it over **[competitors]** because our solution is **[differentiation]**.
 
-Every Design Sprint tests a piece of this hypothesis against real customer reactions.
+Every Design Sprint tests a specific piece of this hypothesis against real customer reactions.
 
-## Install — As a Skill (Recommended)
+---
 
-The Foundation Sprint is available as a portable AI skill that works in Claude Code and Gemini.
+## Using Click Coach
 
-### Claude Code
+### 1. As an Antigravity Skill (Recommended)
+This repo includes a workspace discovery symlink at `.agents/skills/click-foundation`. Antigravity automatically discovers and activates the skill when you open this project.
 
+Simply ask:
+> *"Run a Click Foundation Sprint for my startup idea"* or *"Help me define our customer and problem in plain language."*
+
+### 2. In Claude Code
+Install into your Claude Code skills:
 ```bash
 mkdir -p ~/.claude/skills/click-foundation
-cp skills/click-foundation/SKILL.md ~/.claude/skills/click-foundation/SKILL.md
+cp -r skills/click-foundation/* ~/.claude/skills/click-foundation/
 ```
+Then invoke `/click-foundation` in any conversation.
 
-Then run `/click-foundation` in any conversation.
+### 3. In Gemini Gems
+1. Open [gemini.google.com](https://gemini.google.com) → Gems → New Gem.
+2. Name it **"Click Foundation Sprint"**.
+3. Paste the contents of `skills/click-foundation/SKILL.md` into the Instructions field.
+4. Save and begin chatting. Use the JSON paste fallback described in `skills/click-foundation/references/persistence-protocol.md`.
 
-### Gemini Gem
+---
 
-1. Open [gemini.google.com](https://gemini.google.com) → Gems → New Gem
-2. Name it "Click Foundation Sprint"
-3. Paste the contents of `skills/click-foundation/SKILL.md` into Instructions
-4. Save and start a conversation
+## CLI Automation (`click_coach.py`)
 
-See `skills/click-foundation/README.md` for details.
-
-## Install — As a CLI (Alternative)
-
-The full CLI includes Foundation Sprints, Design Sprints, and learnings tracking.
+The skill bundles a zero-dependency CLI script located at `skills/click-foundation/scripts/click_coach.py`. Both agents and founders can run commands directly:
 
 ```bash
-pip install -e ".[dev]"
+# Initialize a project
+python3 skills/click-foundation/scripts/click_coach.py init --name "My Startup"
+
+# View current sprint status
+python3 skills/click-foundation/scripts/click_coach.py status
+
+# Inspect the current hypothesis and scorecard
+python3 skills/click-foundation/scripts/click_coach.py hypothesis show
+python3 skills/click-foundation/scripts/click_coach.py scorecard show
+
+# Show accumulated learnings
+python3 skills/click-foundation/scripts/click_coach.py learnings show
+
+# Export markdown deliverables (founding-hypothesis.md, scorecard.md, etc.)
+python3 skills/click-foundation/scripts/click_coach.py export-docs
 ```
 
-Requires Python 3.11+ and an Anthropic API key:
+Or install the package to put `click-coach` on your PATH:
+```bash
+pip install -e .
+click-coach --help
+```
+
+---
+
+## Directory Architecture
+
+```text
+.
+├── .agents/skills/click-foundation    # Antigravity workspace discovery symlink
+├── skills/click-foundation/           # Canonical agent skill package
+│   ├── SKILL.md                       # Main agent prompt, coaching rules & step-by-step flow
+│   ├── README.md                      # Skill-specific setup guide
+│   ├── scripts/                       # Deterministic automation scripts
+│   │   ├── click_coach.py             # CLI entry point
+│   │   ├── db.py                      # SQLite database schema and connection handlers
+│   │   ├── models.py                  # Pydantic & dataclass validation models
+│   │   ├── tools.py                   # Core business logic for sprints & scorecard
+│   │   └── docs_generator.py          # Markdown document generator
+│   ├── references/                    # On-demand reference documentation
+│   │   ├── persistence-protocol.md    # Database schemas & JSON fallback specs
+│   │   └── coaching-guide.md          # Note-and-Vote guide & 2x2 matrix formatting
+│   ├── assets/                        # Templates and JSON schemas
+│   │   ├── hypothesis-template.md     # Output markdown skeleton
+│   │   └── schemas/                   # JSON schemas for state files
+│   └── evals/                         # Automated evaluation suites
+│       ├── trigger_queries.json       # 20 trigger queries (train/val split)
+│       └── evals.json                 # Benchmark scenarios with objective assertions
+├── tests/                             # Comprehensive test suite (pytest)
+└── pyproject.toml                     # Package definition & ruff config
+```
+
+---
+
+## Development & Verification
+
+Run tests and linting:
 
 ```bash
-export ANTHROPIC_API_KEY='your-key-here'
-```
+# Run the test suite
+pytest
 
-## Commands
+# Check code with Ruff
+ruff check .
 
-| Command | Description |
-|---------|-------------|
-| `click-coach init` | Initialize Click in the current directory |
-| `click-coach foundation` | Start or resume a Foundation Sprint |
-| `click-coach foundation show` | Show current Foundation Sprint results |
-| `click-coach foundation list` | List all Foundation Sprints |
-| `click-coach sprint` | Start a Design Sprint |
-| `click-coach sprint show <id>` | Show a Design Sprint's details |
-| `click-coach sprint list` | List Design Sprints for current hypothesis |
-| `click-coach hypothesis` | Show current Founding Hypothesis + Scorecard |
-| `click-coach hypothesis update` | Revise hypothesis based on learnings |
-| `click-coach scorecard` | Show current scorecard status |
-| `click-coach scorecard update` | Update scorecard with new evidence |
-| `click-coach learnings` | Show accumulated learnings |
+# Check formatting with Ruff
+ruff format --check .
 
-## Demo Walkthrough
-
-Here's what a Foundation Sprint looks like in practice, using a fictional meal-planning app as an example.
-
-### Step 1 — Basics
-
-The coach asks about your customer, problem, advantages, and competition — one at a time, in plain language.
-
-```
-Coach: Who is your customer? Describe them in plain language — no jargon,
-       no personas. Just who they are and what their life looks like.
-
-You:   Busy parents who cook dinner most weeknights but run out of ideas
-       and end up ordering takeout more than they want to.
-
-Coach: Common sense check — does "busy parents who cook most weeknights"
-       make sense to someone outside your industry? Yes, that's clear.
-       What real problem do they have?
-
-You:   They waste 20+ minutes every evening figuring out what to cook,
-       then realize they're missing ingredients.
-
-Coach: That's a real problem, not a feature wish. Good.
-```
-
-### Step 2 — Differentiation
-
-You plot your product against competitors on scales, then build a 2x2 chart to find where you win.
-
-```
-                    Personalized
-                         |
-                    [You] |
-                         |
-     Simple ─────────────┼──────────────── Complex
-                         |
-                         | [Competitor A]
-               [Do Nothing]
-                         |
-                      Generic
-```
-
-From the chart, you pick 2 differentiators and write 3 practical principles:
-
-```
-Differentiators:
-  1. Personalized to your family's actual preferences
-  2. Simple — 5 ingredients or fewer, always
-
-Principles:
-  1. Differentiate: Recommend meals based on what this family actually eats
-  2. Differentiate: Never suggest a recipe with more than 5 ingredients
-  3. Safeguard: Never require the user to manually enter preferences
-```
-
-### Step 3 — Approach
-
-You brainstorm 3+ approaches, evaluate each through Magic Lenses (customer, pragmatic, growth, money — each a 2x2 chart), and pick a top bet.
-
-```
-Magic Lens: Customer
-
-              High want
-                 |
-           [App] | [Chatbot]
-                 |
-  Low effort ────┼──────── High effort
-                 |
-                 | [Meal kit]
-                 |
-              Low want
-```
-
-Patterns across lenses reveal which approach wins consistently.
-
-### Step 4 — Founding Hypothesis
-
-Everything rolls up into one testable statement:
-
-> If we help **busy parents** solve **nightly meal-planning paralysis** with **a 5-ingredient recipe app that learns their preferences**, they will choose it over **generic recipe sites and meal kits** because our solution is **personalized and radically simple**.
-
-Plus an initial scorecard:
-
-| Question | Answer | Evidence |
-|----------|--------|----------|
-| Right customer? | yes | We are these people |
-| Right problem? | yes | We experience this daily |
-| Right approach? | maybe | Need to test if 5-ingredient constraint works |
-| Will they switch? | not_yet | Haven't tested with real users |
-| Right differentiation? | yes | Nothing else combines personalization + simplicity |
-| Does it click? | not_yet | Hypothesis needs validation through Design Sprints |
-
-All progress is saved to `.click/` — stop anytime and pick up where you left off.
-
-## How It Works
-
-- Session state saved to `.click/` directory as JSON files
-- Resume from any step across conversations
-- Final deliverable: `.click/hypothesis.md`
-- Works in Claude Code (file I/O) and Gemini (paste-based fallback)
-
-## The 10 Lessons
-
-The agent's coaching behavior encodes these principles from the book:
-
-1. Drop everything and sprint on the most important challenge until it's done
-2. Start by identifying your customer and a real problem you can solve
-3. Take advantage of your advantages
-4. Get real about the competition
-5. Differentiation makes products click
-6. Use practical principles to reinforce differentiation
-7. Seek alternatives to your first idea
-8. Consider conflicting opinions before you commit to an approach
-9. It's just a hypothesis until you prove it
-10. Experiment with tiny loops until your solution clicks. Then build it.
-
-## Development
-
-```bash
-# Install with dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest tests/ -v
+# Validate the skill against Open Skills specifications
+python3 ~/.gemini/config/skills/skill-architect/scripts/validate_skill.py skills/click-foundation
 ```

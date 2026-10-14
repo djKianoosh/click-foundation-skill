@@ -1,4 +1,5 @@
-"""SQLite database initialization and query functions."""
+#!/usr/bin/env python3
+"""SQLite database initialization and query functions for Click."""
 
 import sqlite3
 
@@ -135,7 +136,7 @@ def create_project(conn: sqlite3.Connection, name: str) -> int:
     return cursor.lastrowid
 
 
-def get_project(conn: sqlite3.Connection, project_id: int) -> sqlite3.Row:
+def get_project(conn: sqlite3.Connection, project_id: int) -> sqlite3.Row | None:
     """Get a project by ID."""
     cursor = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
     return cursor.fetchone()
@@ -143,18 +144,14 @@ def get_project(conn: sqlite3.Connection, project_id: int) -> sqlite3.Row:
 
 def create_foundation_sprint(conn: sqlite3.Connection, project_id: int) -> int:
     """Create a new Foundation Sprint and return its ID."""
-    cursor = conn.execute(
-        "INSERT INTO foundation_sprints (project_id) VALUES (?)", (project_id,)
-    )
+    cursor = conn.execute("INSERT INTO foundation_sprints (project_id) VALUES (?)", (project_id,))
     conn.commit()
     return cursor.lastrowid
 
 
-def get_foundation_sprint(conn: sqlite3.Connection, sprint_id: int) -> sqlite3.Row:
+def get_foundation_sprint(conn: sqlite3.Connection, sprint_id: int) -> sqlite3.Row | None:
     """Get a Foundation Sprint by ID."""
-    cursor = conn.execute(
-        "SELECT * FROM foundation_sprints WHERE id = ?", (sprint_id,)
-    )
+    cursor = conn.execute("SELECT * FROM foundation_sprints WHERE id = ?", (sprint_id,))
     return cursor.fetchone()
 
 

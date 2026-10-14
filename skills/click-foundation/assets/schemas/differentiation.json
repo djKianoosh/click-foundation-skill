@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClickDifferentiation",
+  "type": "object",
+  "required": [
+    "differentiator_1",
+    "differentiator_2",
+    "axes",
+    "principles"
+  ],
+  "properties": {
+    "differentiator_1": { "type": "string" },
+    "differentiator_2": { "type": "string" },
+    "axes": {
+      "type": "object",
+      "required": ["x_low", "x_high", "y_low", "y_high"],
+      "properties": {
+        "x_low": { "type": "string" },
+        "x_high": { "type": "string" },
+        "y_low": { "type": "string" },
+        "y_high": { "type": "string" }
+      }
+    },
+    "principles": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "Exactly three practical principles: differentiate, reinforce, safeguard"
+    }
+  }
+}

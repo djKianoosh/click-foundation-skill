@@ -1,0 +1,33 @@
+{
+  "skill_name": "click-foundation",
+  "version": "0.2.0",
+  "evals": [
+    {
+      "id": "foundation-meal-prep",
+      "description": "Founder testing a meal prep service idea through the full Foundation Sprint",
+      "prompt": "I want to run a Click Foundation Sprint for a meal prep app called QuickPlate targeting busy parents.",
+      "assertions": [
+        "The coach asks one question at a time and addresses the user as the sole Decider",
+        "Step 1 enforces plain language customer definition without demographic personas",
+        "Step 1 rejects feature statements (e.g. 'needs a recipe app') and insists on real problems",
+        "Step 1 explicitly inquires about the 800-pound gorilla and includes 'do nothing' as competitor",
+        "Step 2 produces a 2x2 matrix and 3 practical principles (differentiate, reinforce, safeguard)",
+        "Step 3 uses Note-and-Vote to brainstorm approaches and evaluates them through magic lenses",
+        "Step 4 produces a Founding Hypothesis strictly matching: 'If we help [customer] solve [problem] with [approach], they will choose it over [competitors] because our solution is [differentiation]'",
+        "Step 4 produces a Scorecard with 6 questions rated with yes/maybe/not_yet/no",
+        "The coach invokes scripts/click_coach.py to persist state after major decisions"
+      ]
+    },
+    {
+      "id": "foundation-resume-existing",
+      "description": "Founder resuming an existing sprint from local state",
+      "prompt": "Let's continue our Click Foundation Sprint. We already finished the basics and differentiation.",
+      "assertions": [
+        "The coach inspects existing state before asking questions",
+        "The coach summarizes previously completed decisions (customer, problem, 2x2 differentiators, principles)",
+        "The coach resumes at Step 3 (Approach Brainstorming) without restarting from Step 1",
+        "The coach does not overwrite existing data files"
+      ]
+    }
+  ]
+}

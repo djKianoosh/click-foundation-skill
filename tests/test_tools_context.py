@@ -1,11 +1,11 @@
 import pytest
-from click_agent.db import create_project, create_foundation_sprint
-from click_agent.tools.foundation import save_founding_hypothesis
-from click_agent.tools.context import (
+from db import create_foundation_sprint, create_project
+from tools import (
     get_project_context,
     query_learnings,
     record_learning,
     revise_hypothesis,
+    save_founding_hypothesis,
 )
 
 
@@ -14,13 +14,21 @@ def context_setup(db_conn):
     project_id = create_project(db_conn, "Test Startup")
     sprint_id = create_foundation_sprint(db_conn, project_id)
     save_founding_hypothesis(
-        db_conn, sprint_id, project_id,
-        customer="founders", problem="slow validation",
-        approach="CLI coach", competitors="books",
+        db_conn,
+        sprint_id,
+        project_id,
+        customer="founders",
+        problem="slow validation",
+        approach="CLI coach",
+        competitors="books",
         differentiation="AI-guided",
     )
     hyp = db_conn.execute("SELECT * FROM hypotheses").fetchone()
-    return {"project_id": project_id, "sprint_id": sprint_id, "hypothesis_id": hyp["id"]}
+    return {
+        "project_id": project_id,
+        "sprint_id": sprint_id,
+        "hypothesis_id": hyp["id"],
+    }
 
 
 class TestGetProjectContext:
@@ -38,7 +46,7 @@ class TestGetProjectContext:
 
 class TestRecordLearning:
     def test_records_learning(self, db_conn, context_setup):
-        result = record_learning(
+        record_learning(
             db_conn,
             source_type="foundation_sprint",
             source_id=context_setup["sprint_id"],
@@ -64,12 +72,18 @@ class TestRecordLearning:
 class TestQueryLearnings:
     def test_returns_learnings(self, db_conn, context_setup):
         record_learning(
-            db_conn, source_type="foundation_sprint", source_id=1,
-            insight="Insight 1", lesson_number=1,
+            db_conn,
+            source_type="foundation_sprint",
+            source_id=1,
+            insight="Insight 1",
+            lesson_number=1,
         )
         record_learning(
-            db_conn, source_type="design_sprint", source_id=1,
-            insight="Insight 2", lesson_number=9,
+            db_conn,
+            source_type="design_sprint",
+            source_id=1,
+            insight="Insight 2",
+            lesson_number=9,
         )
         result = query_learnings(db_conn)
         assert "Insight 1" in result
@@ -82,8 +96,10 @@ class TestQueryLearnings:
 
 class TestReviseHypothesis:
     def test_creates_new_version(self, db_conn, context_setup):
-        result = revise_hypothesis(
-            db_conn, context_setup["project_id"], context_setup["hypothesis_id"],
+        revise_hypothesis(
+            db_conn,
+            context_setup["project_id"],
+            context_setup["hypothesis_id"],
             customer="early-stage founders",
             problem="slow validation",
             approach="CLI coach",
@@ -98,5 +114,7 @@ class TestReviseHypothesis:
         assert hyps[1]["customer"] == "early-stage founders"
         pivot = db_conn.execute("SELECT * FROM pivots").fetchone()
         assert pivot["what_changed"] == "customer, differentiation"
-        project = db_conn.execute("SELECT * FROM projects WHERE id = ?", (context_setup["project_id"],)).fetchone()
+        project = db_conn.execute(
+            "SELECT * FROM projects WHERE id = ?", (context_setup["project_id"],)
+        ).fetchone()
         assert project["current_hypothesis_id"] == hyps[1]["id"]

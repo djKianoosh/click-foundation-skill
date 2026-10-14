@@ -1,5 +1,13 @@
+import sys
+from pathlib import Path
+
+# Ensure skill scripts directory is on sys.path for test execution
+_scripts_dir = Path(__file__).parent.parent / "skills" / "click-foundation" / "scripts"
+if str(_scripts_dir) not in sys.path:
+    sys.path.insert(0, str(_scripts_dir))
+
 import pytest
-from click_agent.db import init_db, get_connection
+from db import get_connection, init_db
 
 
 @pytest.fixture

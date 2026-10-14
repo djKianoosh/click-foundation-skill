@@ -1,17 +1,18 @@
-"""Markdown document generation from SQLite data."""
+#!/usr/bin/env python3
+"""Markdown document generation from Click SQLite database."""
 
 import json
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 
 def generate_docs(
     conn: sqlite3.Connection,
-    output_dir: str,
+    output_dir: str | Path,
     *,
     doc_type: str = "all",
 ) -> str:
-    """Generate markdown documents. doc_type: all, foundation, scorecard, learnings, pivot_history."""
+    """Generate markdown documents. doc_type: all, foundation, scorecard, learnings, pivot_history, sprint."""
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
     generated = []
@@ -69,12 +70,14 @@ def _generate_foundation(conn: sqlite3.Connection, output: Path) -> None:
         lines.append(f"- **Alternatives:** {', '.join(alts)}")
 
     if sprint["differentiator_1"]:
-        lines.extend([
-            "",
-            "## Differentiation",
-            f"- **Differentiator 1:** {sprint['differentiator_1']}",
-            f"- **Differentiator 2:** {sprint['differentiator_2']}",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Differentiation",
+                f"- **Differentiator 1:** {sprint['differentiator_1']}",
+                f"- **Differentiator 2:** {sprint['differentiator_2']}",
+            ]
+        )
 
     if sprint["principles"]:
         prins = json.loads(sprint["principles"])
@@ -96,17 +99,17 @@ def _generate_foundation(conn: sqlite3.Connection, output: Path) -> None:
             "",
             f"**Version {hyp['version']}**",
             "",
-            f"If we help **{hyp['customer']}** solve **{hyp['problem']}** "
-            f"with **{hyp['approach']}**, they will choose it over "
-            f"**{hyp['competitors']}** because our solution is **{hyp['differentiation']}**.",
+            (
+                f"If we help **{hyp['customer']}** solve **{hyp['problem']}** "
+                f"with **{hyp['approach']}**, they will choose it over "
+                f"**{hyp['competitors']}** because our solution is **{hyp['differentiation']}**."
+            ),
         ]
         (output / "founding-hypothesis.md").write_text("\n".join(hyp_lines))
 
 
 def _generate_scorecard(conn: sqlite3.Connection, output: Path) -> None:
-    entries = conn.execute(
-        "SELECT * FROM scorecard_entries ORDER BY updated_at DESC"
-    ).fetchall()
+    entries = conn.execute("SELECT * FROM scorecard_entries ORDER BY updated_at DESC").fetchall()
     if not entries:
         (output / "scorecard.md").write_text("# Scorecard\n\nNo entries yet.")
         return
@@ -166,13 +169,15 @@ def _generate_pivot_history(conn: sqlite3.Connection, output: Path) -> None:
 
     lines = ["# Pivot History", ""]
     for p in pivots:
-        lines.extend([
-            f"## Version {p['version']}",
-            f"- **Changed:** {p['what_changed']}",
-            f"- **Reason:** {p['reason']}",
-            f"- **New hypothesis:** Help {p['customer']} solve {p['problem']} with {p['approach']}",
-            "",
-        ])
+        lines.extend(
+            [
+                f"## Version {p['version']}",
+                f"- **Changed:** {p['what_changed']}",
+                f"- **Reason:** {p['reason']}",
+                f"- **New hypothesis:** Help {p['customer']} solve {p['problem']} with {p['approach']}",
+                "",
+            ]
+        )
 
     (output / "pivot-history.md").write_text("\n".join(lines))
 

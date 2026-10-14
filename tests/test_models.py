@@ -1,15 +1,15 @@
 import pytest
-from pydantic import ValidationError
-from click_agent.models import (
+from models import (
     Alternatives,
-    Diff2x2Axes,
-    Principles,
-    LensEvaluation,
-    LensEvaluations,
     CustomerReaction,
     CustomerReactions,
-    ScorecardAnswer,
+    Diff2x2Axes,
     FoundationStep,
+    LensEvaluation,
+    LensEvaluations,
+    Principles,
+    ScorecardAnswer,
+    ValidationError,
 )
 
 
@@ -30,9 +30,7 @@ class TestAlternatives:
 
 class TestDiff2x2Axes:
     def test_valid_axes(self):
-        axes = Diff2x2Axes(
-            x_low="Slow", x_high="Fast", y_low="Expensive", y_high="Cheap"
-        )
+        axes = Diff2x2Axes(x_low="Slow", x_high="Fast", y_low="Expensive", y_high="Cheap")
         assert axes.x_low == "Slow"
 
     def test_missing_field_raises(self):
@@ -97,9 +95,18 @@ class TestScorecardAnswer:
 class TestFoundationStep:
     def test_valid_steps(self):
         steps = [
-            "customer", "problem", "advantages", "competitors",
-            "differentiation", "principles", "manifesto", "approaches",
-            "lenses", "hypothesis", "scorecard", "complete",
+            "customer",
+            "problem",
+            "advantages",
+            "competitors",
+            "differentiation",
+            "principles",
+            "manifesto",
+            "approaches",
+            "lenses",
+            "hypothesis",
+            "scorecard",
+            "complete",
         ]
         for step in steps:
             assert FoundationStep(step) == step
